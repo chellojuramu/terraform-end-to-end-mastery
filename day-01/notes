@@ -1,0 +1,13 @@
+desired state and actual state
+desired state: the state that we want to be in
+actual state: the state that we are currently in
+the goal of devops is to make the actual state match the desired state
+desired state = actual state
+
+terraform.tfstate file: a file that contains the actual state of the infrastructure
+remote backend : a way to store the terraform.tfstate file in a remote location (e.g. s3, azure blob storage, etc.)
+store state file to remote backend
+donot update or delete the file
+and state locking and isolation of statefile
+regularly backup the state file
+state locking: a mechanism to prevent multiple users from modifying the state file at the same time
