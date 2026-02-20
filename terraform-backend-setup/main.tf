@@ -14,7 +14,7 @@ provider "aws" {
 resource "aws_s3_bucket" "state_bucket" {
   bucket = "ramu-devops-state-2026-unique" #change this to be unique across all AWS accounts
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
 }
