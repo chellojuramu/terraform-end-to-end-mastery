@@ -2,6 +2,7 @@
 .terraform/
 
 .idea/
+notes
 # .tfstate files
 *.tfstate
 *.tfstate.*
