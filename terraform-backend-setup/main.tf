@@ -12,7 +12,7 @@ provider "aws" {
 
 # the vault for state file
 resource "aws_s3_bucket" "state_bucket" {
-  bucket = "ramu-devops-state-2026-unique" #change this to be unique across all AWS accounts
+  bucket = "terraform-state-file-s3-23022026" #change this to be unique across all AWS accounts
   lifecycle {
     prevent_destroy = false
   }
@@ -25,14 +25,14 @@ resource "aws_s3_bucket_versioning" "state_versioning" {
     status = "Enabled"
   }
 }
-# the "lock" to prevent two people from running terraform at once
-resource "aws_dynamodb_table" "state_lock" {
-  name = "ramu-state-lock-table"
-  billing_mode = "PAY_PER_REQUEST"
-    hash_key = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-}
+# # the "lock" to prevent two people from running terraform at once
+# resource "aws_dynamodb_table" "state_lock" {
+#   name = "ramu-state-lock-table"
+#   billing_mode = "PAY_PER_REQUEST"
+#     hash_key = "LockID"
+#
+#   attribute {
+#     name = "LockID"
+#     type = "S"
+#   }
+# }
