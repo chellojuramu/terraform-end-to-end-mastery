@@ -678,7 +678,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Your Name**
 
 - GitHub: [@chellojuramu](https://github.com/chellojuramu)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/ramuchelloju)
+- LinkedIn: [Ramu Chelloju](https://linkedin.com/in/ramuchelloju)
 
 
 ---
