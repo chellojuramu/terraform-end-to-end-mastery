@@ -35,7 +35,7 @@ This project implements a **production-ready 3-tier architecture** on AWS using 
 
 - ✅ **Modular Design** - Reusable infrastructure components
 - ✅ **Environment Separation** - Dev/Staging/Prod isolation
-- ✅ **Remote State** - S3 backend with DynamoDB locking
+- ✅ **Remote State** - S3 backend with built-in locking
 - ✅ **Security First** - Private database, SG isolation, least privilege
 - ✅ **High Availability** - Multi-AZ subnet design
 - ✅ **Scalability** - Ready for production enhancements
@@ -138,8 +138,7 @@ This project implements a **production-ready 3-tier architecture** on AWS using 
 
 ### 📦 Infrastructure as Code
 - **Modular Terraform** architecture
-- **S3 backend** for state storage
-- **DynamoDB** for state locking
+- **S3 backend** for state storage with built-in locking
 - **Remote state** data sources for layer communication
 - **Environment separation** (dev/staging/prod ready)
 
@@ -226,16 +225,7 @@ aws-cli >= 2.0
    aws s3 mb s3://terraform-state-file-s3-YOUR-UNIQUE-ID
    ```
 
-2. **DynamoDB Table** for state locking
-   ```bash
-   aws dynamodb create-table \
-     --table-name terraform-state-lock \
-     --attribute-definitions AttributeName=LockID,AttributeType=S \
-     --key-schema AttributeName=LockID,KeyType=HASH \
-     --billing-mode PAY_PER_REQUEST
-   ```
-
-3. **EC2 Key Pair** for SSH access
+2. **EC2 Key Pair** for SSH access
    ```bash
    aws ec2 create-key-pair --key-name your-key-name \
      --query 'KeyMaterial' --output text > your-key-name.pem
@@ -272,8 +262,8 @@ terraform {
     bucket         = "your-terraform-state-bucket"  # Change this
     key            = "dev/network/terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "terraform-state-lock"
     encrypt        = true
+    use_lockfile   = true  # S3-native locking (no DynamoDB needed)
   }
 }
 ```
@@ -418,19 +408,47 @@ terraform apply
 
 ### State Architecture
 
-Each layer maintains **independent state** in S3:
+Each layer maintains **independent state** in S3 with built-in locking:
 
 ```
 S3 Bucket: terraform-state-file-s3-YOUR-ID
 │
 ├── dev/
 │   ├── network/terraform.tfstate
+│   ├── network/.terraform.tfstate.lock.info  # S3 lockfile
 │   ├── security/terraform.tfstate
+│   ├── security/.terraform.tfstate.lock.info
 │   ├── database/terraform.tfstate
+│   ├── database/.terraform.tfstate.lock.info
 │   └── compute/terraform.tfstate
+│       └── compute/.terraform.tfstate.lock.info
 │
 └── [Future: staging/, prod/]
 ```
+
+### State Locking
+
+Using **S3 native locking** with `use_lockfile = true`:
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket       = "terraform-state-file-s3-YOUR-ID"
+    key          = "dev/network/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true  # Creates .terraform.tfstate.lock.info in S3
+  }
+}
+```
+
+**How it works**:
+- When `terraform apply` runs, it creates a lock file in S3
+- Lock file: `.terraform.tfstate.lock.info` in the same directory
+- Prevents concurrent modifications without DynamoDB
+- Automatically cleaned up after operation completes
+- ✅ **Simpler setup** - No separate DynamoDB table needed
+- ✅ **Cost-effective** - Only S3 costs, no DynamoDB charges
 
 ### Cross-Layer Communication
 
@@ -449,6 +467,27 @@ data "terraform_remote_state" "network" {
 
 # Use outputs
 vpc_id = data.terraform_remote_state.network.outputs.vpc_id
+```
+
+### Why S3 Lockfile Instead of DynamoDB?
+
+**Traditional approach**: Separate DynamoDB table for locking  
+**Our approach**: S3 native locking with `use_lockfile = true`
+
+**Benefits**:
+- ✅ **Simpler setup** - One less AWS service to manage
+- ✅ **Lower cost** - No DynamoDB charges
+- ✅ **Same functionality** - Prevents concurrent modifications
+- ✅ **Automatic cleanup** - Lock removed after operation
+- ✅ **No extra infrastructure** - Works out of the box with S3
+
+**How it works**:
+```
+When terraform apply starts:
+1. Creates .terraform.tfstate.lock.info in S3
+2. Other operations see the lock and wait
+3. Lock automatically removed when done
+4. Next operation can proceed
 ```
 
 ### Benefits
@@ -496,7 +535,7 @@ vpc_id = data.terraform_remote_state.network.outputs.vpc_id
 - ✅ **Defense in Depth** - Multiple security layers
 - ✅ **Network Segmentation** - Public/private isolation
 - ✅ **State Encryption** - S3 encryption enabled
-- ✅ **State Locking** - DynamoDB prevents concurrent modifications
+- ✅ **State Locking** - S3 lockfile prevents concurrent modifications
 
 ### 🚨 Production Enhancements Needed
 
@@ -638,9 +677,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Your Name**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-- Email: your.email@example.com
+- GitHub: [@chellojuramu](https://github.com/chellojuramu)
+- LinkedIn: [Ramu Chelloju](https://linkedin.com/in/ramuchelloju)
+
 
 ---
 
