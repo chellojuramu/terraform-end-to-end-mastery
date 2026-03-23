@@ -12,7 +12,7 @@ resource "azurerm_storage_account" "storage" {
   account_replication_type = "LRS"
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
   tags = merge(
     local.common_tags,

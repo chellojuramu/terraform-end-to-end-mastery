@@ -39,7 +39,7 @@ Internet
 
 ## 📸 Output (Load Balancing Demo)
 
-![VMSS Output](./assets/output.png)
+![img.png](img.png)
 
 👉 Refreshing the page shows different VM instances, proving:
 
@@ -242,7 +242,7 @@ http://<load-balancer-dns>
 ---
 
 ## 🏆 Outcome
-![img.png](img.png)
+
 * Scalable infrastructure
 * Secure networking
 * Automated provisioning
